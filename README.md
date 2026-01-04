@@ -21,6 +21,10 @@ This extension highlights Minecraft color codes directly in your editor. No more
 
 ## Preview
 
+![Preview](images/image.png)
+
+![Preview](images/image1.png)
+
 Select any text with color codes and hover to see a rendered preview.
 
 ---
@@ -112,4 +116,4 @@ npm run compile
 
 ## License
 
-GPL-3.0
+MIT
