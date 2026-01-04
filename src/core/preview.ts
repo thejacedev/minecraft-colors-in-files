@@ -9,6 +9,7 @@ interface StyledSegment {
     italic: boolean;
     underline: boolean;
     strikethrough: boolean;
+    obfuscated: boolean;
 }
 
 export function generatePreviewSvg(text: string, settings: ParserSettings): string {
@@ -51,7 +52,16 @@ export function generatePreviewSvg(text: string, settings: ParserSettings): stri
             textDecoration = 'line-through';
         }
 
-        const escapedText = escapeSvgText(segment.text);
+        // For obfuscated text, replace with random characters
+        let displayText = segment.text;
+        if (segment.obfuscated) {
+            const obfuscatedChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            displayText = [...segment.text].map(() =>
+                obfuscatedChars[Math.floor(Math.random() * obfuscatedChars.length)]
+            ).join('');
+        }
+
+        const escapedText = escapeSvgText(displayText);
 
         svg += `<text x="${xPos}" y="${yPos}" fill="${color}" font-family="monospace" font-size="14" font-weight="${fontWeight}" font-style="${fontStyle}"${textDecoration ? ` text-decoration="${textDecoration}"` : ''}>${escapedText}</text>`;
 
@@ -86,7 +96,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
     const matches = findAllMatches(text, settings);
 
     if (matches.length === 0) {
-        return [{ text, color: null, bold: false, italic: false, underline: false, strikethrough: false }];
+        return [{ text, color: null, bold: false, italic: false, underline: false, strikethrough: false, obfuscated: false }];
     }
 
     let currentColor: string | null = null;
@@ -96,6 +106,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
     let italic = false;
     let underline = false;
     let strikethrough = false;
+    let obfuscated = false;
 
     // Text before first match
     if (matches[0].startIndex > 0) {
@@ -106,6 +117,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
             italic: false,
             underline: false,
             strikethrough: false,
+            obfuscated: false,
         });
     }
 
@@ -119,7 +131,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
                 // Close gradient - add gradient segments
                 if (currentGradient) {
                     const gradText = text.substring(currentGradient.startIndex, currentMatch.startIndex);
-                    addGradientSegments(segments, gradText, currentGradient.colors, bold, italic, underline, strikethrough);
+                    addGradientSegments(segments, gradText, currentGradient.colors, bold, italic, underline, strikethrough, obfuscated);
                     currentGradient = null;
                 }
                 currentColor = colorStack.length > 0 ? colorStack.pop()! : null;
@@ -134,6 +146,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
             if (currentMatch.format === 'italic') { italic = false; }
             if (currentMatch.format === 'underline') { underline = false; }
             if (currentMatch.format === 'strikethrough') { strikethrough = false; }
+            if (currentMatch.format === 'obfuscated') { obfuscated = false; }
             if (currentMatch.format === 'reset') {
                 currentColor = null;
                 colorStack = [];
@@ -142,6 +155,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
                 italic = false;
                 underline = false;
                 strikethrough = false;
+                obfuscated = false;
             }
         } else {
             if (currentMatch.gradient) {
@@ -159,6 +173,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
             if (currentMatch.format === 'italic') { italic = true; }
             if (currentMatch.format === 'underline') { underline = true; }
             if (currentMatch.format === 'strikethrough') { strikethrough = true; }
+            if (currentMatch.format === 'obfuscated') { obfuscated = true; }
             if (currentMatch.format === 'reset') {
                 currentColor = null;
                 colorStack = [];
@@ -167,6 +182,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
                 italic = false;
                 underline = false;
                 strikethrough = false;
+                obfuscated = false;
             }
         }
 
@@ -185,6 +201,7 @@ function getStyledSegments(text: string, settings: ParserSettings): StyledSegmen
                 italic,
                 underline,
                 strikethrough,
+                obfuscated,
             });
         }
     }
@@ -199,7 +216,8 @@ function addGradientSegments(
     bold: boolean,
     italic: boolean,
     underline: boolean,
-    strikethrough: boolean
+    strikethrough: boolean,
+    obfuscated: boolean
 ): void {
     const chars = [...text];
     for (let i = 0; i < chars.length; i++) {
@@ -211,6 +229,7 @@ function addGradientSegments(
             italic,
             underline,
             strikethrough,
+            obfuscated,
         });
     }
 }

@@ -142,7 +142,34 @@ function updateDecorations(editor: vscode.TextEditor) {
                 const startPos = currentMatch.isMiniMessage
                     ? currentMatch.startIndex + currentMatch.matchLength
                     : currentMatch.startIndex;
-                const endPos = nextMatch ? nextMatch.startIndex : text.length;
+                let endPos = nextMatch ? nextMatch.startIndex : text.length;
+
+                // For legacy codes, check if we're inside a quoted string and stop at closing quote
+                if (!currentMatch.isMiniMessage && currentMatch.color) {
+                    const quoteChars = ['`', '"', "'"];
+                    for (const quote of quoteChars) {
+                        // Find opening quote before the color code
+                        const beforeCode = text.substring(0, currentMatch.startIndex);
+                        const lastOpenQuote = beforeCode.lastIndexOf(quote);
+
+                        if (lastOpenQuote !== -1) {
+                            // Check if there's no closing quote between open quote and color code
+                            const betweenQuoteAndCode = text.substring(lastOpenQuote + 1, currentMatch.startIndex);
+                            if (!betweenQuoteAndCode.includes(quote)) {
+                                // We're inside a quoted string - find closing quote
+                                const afterCode = text.substring(startPos);
+                                const closingQuote = afterCode.indexOf(quote);
+                                if (closingQuote !== -1) {
+                                    const absoluteClosingPos = startPos + closingQuote;
+                                    if (absoluteClosingPos < endPos) {
+                                        endPos = absoluteClosingPos;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 if (endPos > startPos) {
                     const range = new vscode.Range(
@@ -159,26 +186,123 @@ function updateDecorations(editor: vscode.TextEditor) {
             }
         }
 
-        // Handle gradients for this line
+        // Handle gradients for this line - with nested formatting support
         for (const grad of gradientRanges.filter(g => g.startIndex >= 0)) {
             const gradText = text.substring(grad.startIndex, grad.endIndex);
-            const chars = [...gradText]; // Handle unicode properly
 
-            for (let charIdx = 0; charIdx < chars.length; charIdx++) {
-                const charColor = getGradientColor(grad.colors, charIdx, chars.length);
-                const charStart = grad.startIndex + chars.slice(0, charIdx).join('').length;
-                const charEnd = charStart + chars[charIdx].length;
+            // Find formatting tags inside the gradient
+            const innerMatches = findAllMatches(gradText, settings);
 
-                const range = new vscode.Range(
-                    new vscode.Position(lineNum, charStart),
-                    new vscode.Position(lineNum, charEnd)
-                );
+            // Track formatting state within gradient
+            let innerBold = grad.bold;
+            let innerItalic = grad.italic;
+            let innerUnderline = grad.underline;
+            let innerStrikethrough = grad.strikethrough;
+            let innerObfuscated = grad.obfuscated;
 
-                const key = getDecorationKey(charColor, grad.bold, grad.italic, grad.underline, grad.strikethrough, grad.obfuscated);
-                if (!styleRanges.has(key)) {
-                    styleRanges.set(key, []);
+            // Build segments with their formatting
+            interface GradientSegment {
+                start: number;
+                end: number;
+                bold: boolean;
+                italic: boolean;
+                underline: boolean;
+                strikethrough: boolean;
+                obfuscated: boolean;
+            }
+
+            const segments: GradientSegment[] = [];
+            let lastEnd = 0;
+
+            for (const innerMatch of innerMatches) {
+                // Add segment before this tag
+                if (innerMatch.startIndex > lastEnd) {
+                    segments.push({
+                        start: lastEnd,
+                        end: innerMatch.startIndex,
+                        bold: innerBold,
+                        italic: innerItalic,
+                        underline: innerUnderline,
+                        strikethrough: innerStrikethrough,
+                        obfuscated: innerObfuscated,
+                    });
                 }
-                styleRanges.get(key)!.push(range);
+
+                // Update formatting state
+                if (innerMatch.isClosingTag) {
+                    if (innerMatch.format === 'bold') { innerBold = false; }
+                    if (innerMatch.format === 'italic') { innerItalic = false; }
+                    if (innerMatch.format === 'underline') { innerUnderline = false; }
+                    if (innerMatch.format === 'strikethrough') { innerStrikethrough = false; }
+                    if (innerMatch.format === 'obfuscated') { innerObfuscated = false; }
+                } else {
+                    if (innerMatch.format === 'bold') { innerBold = true; }
+                    if (innerMatch.format === 'italic') { innerItalic = true; }
+                    if (innerMatch.format === 'underline') { innerUnderline = true; }
+                    if (innerMatch.format === 'strikethrough') { innerStrikethrough = true; }
+                    if (innerMatch.format === 'obfuscated') { innerObfuscated = true; }
+                }
+
+                lastEnd = innerMatch.startIndex + innerMatch.matchLength;
+            }
+
+            // Add final segment
+            if (lastEnd < gradText.length) {
+                segments.push({
+                    start: lastEnd,
+                    end: gradText.length,
+                    bold: innerBold,
+                    italic: innerItalic,
+                    underline: innerUnderline,
+                    strikethrough: innerStrikethrough,
+                    obfuscated: innerObfuscated,
+                });
+            }
+
+            // If no inner tags, treat whole gradient as one segment
+            if (segments.length === 0) {
+                segments.push({
+                    start: 0,
+                    end: gradText.length,
+                    bold: grad.bold,
+                    italic: grad.italic,
+                    underline: grad.underline,
+                    strikethrough: grad.strikethrough,
+                    obfuscated: grad.obfuscated,
+                });
+            }
+
+            // Get visible characters (excluding tags) for gradient calculation
+            let visibleText = '';
+            for (const seg of segments) {
+                visibleText += gradText.substring(seg.start, seg.end);
+            }
+            const visibleChars = [...visibleText];
+
+            // Apply gradient colors to each segment
+            let visibleCharIdx = 0;
+            for (const seg of segments) {
+                const segText = gradText.substring(seg.start, seg.end);
+                const segChars = [...segText];
+
+                for (let i = 0; i < segChars.length; i++) {
+                    const charColor = getGradientColor(grad.colors, visibleCharIdx, visibleChars.length);
+                    const charStart = grad.startIndex + seg.start + segChars.slice(0, i).join('').length;
+                    const charEnd = charStart + segChars[i].length;
+
+                    const range = new vscode.Range(
+                        new vscode.Position(lineNum, charStart),
+                        new vscode.Position(lineNum, charEnd)
+                    );
+
+                    const key = getDecorationKey(charColor, seg.bold, seg.italic, seg.underline, seg.strikethrough, seg.obfuscated);
+                    if (!styleRanges.has(key)) {
+                        styleRanges.set(key, []);
+                    }
+                    styleRanges.get(key)!.push(range);
+
+                    visibleCharIdx++;
+                }
             }
         }
 
