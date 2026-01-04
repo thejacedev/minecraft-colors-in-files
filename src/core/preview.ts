@@ -1,4 +1,4 @@
-import { StyleMatch, ParserSettings } from '../constants';
+import { ParserSettings } from '../constants';
 import { getGradientColor } from '../utils';
 import { findAllMatches } from './parser';
 

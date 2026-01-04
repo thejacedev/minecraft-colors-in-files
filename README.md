@@ -1,110 +1,115 @@
 # Minecraft Colors in Files
 
-A VS Code extension that highlights Minecraft color codes directly in your files. See your colors as you type!
+> See your Minecraft color codes come to life as you type.
 
-![Demo](images/demo.gif)
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacesleeman.minecraft-colors-in-files)
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/jacesleeman.minecraft-colors-in-files)
+![License](https://img.shields.io/github/license/thejacedev/minecraft-colors-in-files)
 
-## Features
+---
 
-- **Legacy Color Codes** - `&0` through `&f` for classic Minecraft colors
-- **Legacy Hex Colors** - `&#RRGGBB` format
-- **MiniMessage Support** - Full support for Adventure's MiniMessage format
-  - Named colors: `<red>`, `<gold>`, `<aqua>`, etc.
-  - Hex colors: `<#FF5555>`
-  - Gradients: `<gradient:#ff0000:#00ff00>Rainbow text</gradient>`
-- **Formatting** - Bold, italic, underline, strikethrough, and obfuscated
-- **Live Preview** - Select text and hover to see a rendered preview
+## What it does
 
-## Supported Formats
+This extension highlights Minecraft color codes directly in your editor. No more guessing what `&c` or `<gradient:#ff0000:#00ff00>` looks like - just see it.
 
-### Legacy Codes
-```
-&0 Black       &8 Dark Gray
-&1 Dark Blue   &9 Blue
-&2 Dark Green  &a Green
-&3 Dark Aqua   &b Aqua
-&4 Dark Red    &c Red
-&5 Dark Purple &d Light Purple
-&6 Gold        &e Yellow
-&7 Gray        &f White
+**Supports:**
+- Legacy codes (`&c`, `&l`, `&o`)
+- Legacy hex (`&#FF5555`)
+- MiniMessage (`<red>`, `<bold>`, `<gradient:...>`)
 
-&l Bold        &o Italic
-&n Underline   &m Strikethrough
-&k Obfuscated  &r Reset
-```
+---
+
+## Preview
+
+Select any text with color codes and hover to see a rendered preview.
+
+---
+
+## Formats
+
+### Legacy
+| Code | Color | Code | Color |
+|------|-------|------|-------|
+| `&0` | Black | `&8` | Dark Gray |
+| `&1` | Dark Blue | `&9` | Blue |
+| `&2` | Dark Green | `&a` | Green |
+| `&3` | Dark Aqua | `&b` | Aqua |
+| `&4` | Dark Red | `&c` | Red |
+| `&5` | Dark Purple | `&d` | Light Purple |
+| `&6` | Gold | `&e` | Yellow |
+| `&7` | Gray | `&f` | White |
+
+| Code | Format |
+|------|--------|
+| `&l` | **Bold** |
+| `&o` | *Italic* |
+| `&n` | Underline |
+| `&m` | ~~Strikethrough~~ |
+| `&k` | Obfuscated |
+| `&r` | Reset |
 
 ### Legacy Hex
 ```
-&#FF5555 - Custom hex color
-&#5555FF - Another hex color
+&#FF5555  &#55FF55  &#5555FF
 ```
 
 ### MiniMessage
 ```xml
-<red>Red text</red>
-<#FF5555>Custom hex</‎#FF5555>
-<bold>Bold text</bold>
-<italic>Italic text</italic>
-<gradient:#ff0000:#00ff00>Gradient text</gradient>
+<red>colored text</red>
+<#FF5555>hex color</#FF5555>
+<bold><italic>formatted</italic></bold>
+<gradient:#ff0000:#00ff00>smooth gradient</gradient>
 ```
 
-## Extension Settings
+---
 
-This extension contributes the following settings:
+## Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `minecraftColors.legacy.enabled` | `true` | Enable legacy formatting (&x codes) |
-| `minecraftColors.legacy.colors` | `true` | Enable legacy color codes (&0-9, &a-f) |
-| `minecraftColors.legacy.formatting` | `true` | Enable legacy formatting codes (&k, &l, &m, &n, &o, &r) |
-| `minecraftColors.legacyHex.enabled` | `true` | Enable legacy hex colors (&#RRGGBB) |
-| `minecraftColors.miniMessage.enabled` | `true` | Enable MiniMessage formatting |
-| `minecraftColors.miniMessage.colors` | `true` | Enable MiniMessage color tags |
-| `minecraftColors.miniMessage.formatting` | `true` | Enable MiniMessage formatting tags |
-| `minecraftColors.miniMessage.gradients` | `true` | Enable MiniMessage gradient tags |
+All settings default to `true`. Disable what you don't need:
+
+```json
+{
+  "minecraftColors.legacy.enabled": true,
+  "minecraftColors.legacy.colors": true,
+  "minecraftColors.legacy.formatting": true,
+  "minecraftColors.legacyHex.enabled": true,
+  "minecraftColors.miniMessage.enabled": true,
+  "minecraftColors.miniMessage.colors": true,
+  "minecraftColors.miniMessage.formatting": true,
+  "minecraftColors.miniMessage.gradients": true
+}
+```
+
+---
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `Toggle Minecraft Color Highlighting` | Enable/disable the color highlighting |
+| `Toggle Minecraft Color Highlighting` | Turn highlighting on/off |
 
-## Installation
+---
 
-### From VS Code Marketplace
-1. Open VS Code
-2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "Minecraft Colors in Files"
-4. Click Install
+## Install
 
-### From VSIX
-1. Download the `.vsix` file from releases
-2. Open VS Code
-3. Go to Extensions (Ctrl+Shift+X)
-4. Click the `...` menu and select "Install from VSIX..."
-5. Select the downloaded file
+**Marketplace:** Search "Minecraft Colors in Files" in VS Code extensions
+
+**Manual:** Download `.vsix` from releases → Extensions → `...` → Install from VSIX
+
+---
 
 ## Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/jacesleeman/minecraft-colors-in-files.git
+git clone https://github.com/thejacedev/minecraft-colors-in-files.git
 cd minecraft-colors-in-files
-
-# Install dependencies
 npm install
-
-# Compile
 npm run compile
-
-# Run in development mode
-# Press F5 in VS Code to launch Extension Development Host
+# Press F5 to run
 ```
+
+---
 
 ## License
 
-MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+GPL-3.0
