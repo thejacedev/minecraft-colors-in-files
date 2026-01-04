@@ -208,6 +208,30 @@ function updateDecorations(editor: vscode.TextEditor) {
             }
         }
 
+        // Handle unclosed gradients - auto-close at backtick or end of line
+        if (currentGradient) {
+            let gradEndIndex = text.length;
+
+            // Check for backtick after gradient start
+            const afterGradient = text.substring(currentGradient.startIndex);
+            const backtickPos = afterGradient.indexOf('`');
+            if (backtickPos !== -1) {
+                gradEndIndex = currentGradient.startIndex + backtickPos;
+            }
+
+            gradientRanges.push({
+                startIndex: currentGradient.startIndex,
+                endIndex: gradEndIndex,
+                colors: currentGradient.colors,
+                bold,
+                italic,
+                underline,
+                strikethrough,
+                obfuscated,
+            });
+            currentGradient = null;
+        }
+
         // Handle gradients for this line - with nested formatting support
         for (const grad of gradientRanges.filter(g => g.startIndex >= 0)) {
             const gradText = text.substring(grad.startIndex, grad.endIndex);
