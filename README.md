@@ -56,13 +56,16 @@
   "minecraftColors.customVariables": {
     "COLORS.primary": "#FF5555",
     "COLORS.secondary": "&a"
-  }
+  },
+  "minecraftColors.highlightInBackticks": true,
+  "minecraftColors.stopAtTemplateExpressions": false
 }
 ```
 
 ## Commands
 
 - `Toggle Minecraft Color Highlighting` - Turn on/off
+- `Minecraft Colors: Preview Mode` - Hide color codes (Alt+P)
 
 ## License
 

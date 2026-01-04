@@ -12,6 +12,8 @@ import {
 } from './core';
 
 let enabled = true;
+let previewMode = false;
+let hideCodesDecorationType: vscode.TextEditorDecorationType | null = null;
 
 function getSettings(): ParserSettings {
     const config = vscode.workspace.getConfiguration();
@@ -25,6 +27,8 @@ function getSettings(): ParserSettings {
         miniMessageFormatting: config.get<boolean>(SETTING_KEYS.MINIMESSAGE_FORMATTING, true),
         miniMessageGradients: config.get<boolean>(SETTING_KEYS.MINIMESSAGE_GRADIENTS, true),
         customVariables: config.get<Record<string, string>>(SETTING_KEYS.CUSTOM_VARIABLES, {}),
+        highlightInBackticks: config.get<boolean>(SETTING_KEYS.HIGHLIGHT_IN_BACKTICKS, true),
+        stopAtTemplateExpressions: config.get<boolean>(SETTING_KEYS.STOP_AT_TEMPLATE_EXPR, false),
     };
     return settings;
 }
@@ -39,6 +43,17 @@ function updateDecorations(editor: vscode.TextEditor) {
     const document = editor.document;
     const styleRanges: Map<string, vscode.Range[]> = new Map();
     const gradientRanges: GradientRange[] = [];
+
+    // Helper to check if a position is inside backticks
+    function isInsideBackticks(text: string, index: number): boolean {
+        let insideBackticks = false;
+        for (let i = 0; i < index; i++) {
+            if (text[i] === '`') {
+                insideBackticks = !insideBackticks;
+            }
+        }
+        return insideBackticks;
+    }
 
     for (let lineNum = 0; lineNum < document.lineCount; lineNum++) {
         const line = document.lineAt(lineNum);
@@ -61,6 +76,11 @@ function updateDecorations(editor: vscode.TextEditor) {
         for (let i = 0; i < matches.length; i++) {
             const currentMatch = matches[i];
             const nextMatch = matches[i + 1];
+
+            // Skip if inside backticks and setting is disabled
+            if (!settings.highlightInBackticks && isInsideBackticks(text, currentMatch.startIndex)) {
+                continue;
+            }
 
             // Apply the current match to style state
             if (currentMatch.isClosingTag) {
@@ -160,12 +180,14 @@ function updateDecorations(editor: vscode.TextEditor) {
                         }
                     }
 
-                    // Stop at template expressions ${...}
-                    const nextTemplateExpr = afterCode.indexOf('${');
-                    if (nextTemplateExpr !== -1) {
-                        const absoluteTemplatePos = startPos + nextTemplateExpr;
-                        if (absoluteTemplatePos < endPos) {
-                            endPos = absoluteTemplatePos;
+                    // Stop at template expressions ${...} (only if setting enabled)
+                    if (settings.stopAtTemplateExpressions) {
+                        const nextTemplateExpr = afterCode.indexOf('${');
+                        if (nextTemplateExpr !== -1) {
+                            const absoluteTemplatePos = startPos + nextTemplateExpr;
+                            if (absoluteTemplatePos < endPos) {
+                                endPos = absoluteTemplatePos;
+                            }
                         }
                     }
 
@@ -385,6 +407,44 @@ function updateAllEditors() {
     });
 }
 
+function applyPreviewMode(editor: vscode.TextEditor) {
+    const settings = getSettings();
+    const document = editor.document;
+    const hideRanges: vscode.Range[] = [];
+
+    // Create decoration type to hide text (make it invisible)
+    if (!hideCodesDecorationType) {
+        hideCodesDecorationType = vscode.window.createTextEditorDecorationType({
+            letterSpacing: '-1em',
+            opacity: '0',
+            textDecoration: 'none; font-size: 0;',
+        });
+    }
+
+    for (let lineNum = 0; lineNum < document.lineCount; lineNum++) {
+        const line = document.lineAt(lineNum);
+        const text = line.text;
+        const matches = findAllMatches(text, settings);
+
+        for (const match of matches) {
+            // Hide the color code/tag itself
+            const range = new vscode.Range(
+                new vscode.Position(lineNum, match.startIndex),
+                new vscode.Position(lineNum, match.startIndex + match.matchLength)
+            );
+            hideRanges.push(range);
+        }
+    }
+
+    editor.setDecorations(hideCodesDecorationType, hideRanges);
+}
+
+function clearPreviewMode(editor: vscode.TextEditor) {
+    if (hideCodesDecorationType) {
+        editor.setDecorations(hideCodesDecorationType, []);
+    }
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Minecraft Colors in Files is now active!');
 
@@ -399,6 +459,22 @@ export function activate(context: vscode.ExtensionContext) {
             });
         } else {
             updateAllEditors();
+        }
+    });
+
+    // Preview mode command - hides color codes while held
+    const previewModeCommand = vscode.commands.registerCommand('minecraft-colors.previewMode', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || !enabled) { return; }
+
+        previewMode = !previewMode;
+
+        if (previewMode) {
+            applyPreviewMode(editor);
+            vscode.window.showInformationMessage('Preview mode: ON (color codes hidden)');
+        } else {
+            clearPreviewMode(editor);
+            vscode.window.showInformationMessage('Preview mode: OFF');
         }
     });
 
@@ -461,7 +537,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(toggleCommand, changeEditor, changeDocument, changeSettings, hoverProvider);
+    context.subscriptions.push(toggleCommand, previewModeCommand, changeEditor, changeDocument, changeSettings, hoverProvider);
 
     updateAllEditors();
 }

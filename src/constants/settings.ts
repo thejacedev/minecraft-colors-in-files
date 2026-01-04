@@ -8,6 +8,8 @@ export const SETTING_KEYS = {
     MINIMESSAGE_FORMATTING: 'minecraftColors.miniMessage.formatting',
     MINIMESSAGE_GRADIENTS: 'minecraftColors.miniMessage.gradients',
     CUSTOM_VARIABLES: 'minecraftColors.customVariables',
+    HIGHLIGHT_IN_BACKTICKS: 'minecraftColors.highlightInBackticks',
+    STOP_AT_TEMPLATE_EXPR: 'minecraftColors.stopAtTemplateExpressions',
 } as const;
 
 export interface ParserSettings {
@@ -20,6 +22,8 @@ export interface ParserSettings {
     miniMessageFormatting: boolean;
     miniMessageGradients: boolean;
     customVariables: Record<string, string>;
+    highlightInBackticks: boolean;
+    stopAtTemplateExpressions: boolean;
 }
 
 export const DEFAULT_SETTINGS: ParserSettings = {
@@ -32,4 +36,6 @@ export const DEFAULT_SETTINGS: ParserSettings = {
     miniMessageFormatting: true,
     miniMessageGradients: true,
     customVariables: {},
+    highlightInBackticks: true,
+    stopAtTemplateExpressions: false,
 };
