@@ -2,9 +2,9 @@
 
 > See your Minecraft color codes come to life as you type.
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacesleeman.minecraft-colors-in-files)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/jacesleeman.minecraft-colors-in-files)
-![License](https://img.shields.io/github/license/thejacedev/minecraft-colors-in-files)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jacesleeman.minecraft-colors-in-files)](https://marketplace.visualstudio.com/items?itemName=jacesleeman.minecraft-colors-in-files)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/jacesleeman.minecraft-colors-in-files)](https://marketplace.visualstudio.com/items?itemName=jacesleeman.minecraft-colors-in-files)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 

@@ -2,7 +2,7 @@
   "name": "minecraft-colors-in-files",
   "displayName": "Minecraft Colors in Files",
   "description": "Highlights Minecraft color codes (&x, &#HEX, MiniMessage) in your files",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "jacesleeman",
   "icon": "images/icon.png",
   "repository": {
