@@ -2,7 +2,7 @@
   "name": "minecraft-colors-in-files",
   "displayName": "Minecraft Colors in Files",
   "description": "Highlights Minecraft color codes (&x, &#HEX, MiniMessage) in your files",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "publisher": "jacesleeman",
   "icon": "images/icon.png",
   "repository": {
@@ -69,6 +69,15 @@
           "type": "boolean",
           "default": true,
           "description": "Enable MiniMessage gradient tags"
+        },
+        "minecraftColors.customVariables": {
+          "type": "object",
+          "default": {},
+          "description": "Custom variable mappings to hex colors (e.g., { \"COLORS.primary\": \"#FF5555\", \"COLORS.secondary\": \"#55FF55\" })",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
         }
       }
     }

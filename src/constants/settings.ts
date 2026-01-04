@@ -7,6 +7,7 @@ export const SETTING_KEYS = {
     MINIMESSAGE_COLORS: 'minecraftColors.miniMessage.colors',
     MINIMESSAGE_FORMATTING: 'minecraftColors.miniMessage.formatting',
     MINIMESSAGE_GRADIENTS: 'minecraftColors.miniMessage.gradients',
+    CUSTOM_VARIABLES: 'minecraftColors.customVariables',
 } as const;
 
 export interface ParserSettings {
@@ -18,6 +19,7 @@ export interface ParserSettings {
     miniMessageColors: boolean;
     miniMessageFormatting: boolean;
     miniMessageGradients: boolean;
+    customVariables: Record<string, string>;
 }
 
 export const DEFAULT_SETTINGS: ParserSettings = {
@@ -29,4 +31,5 @@ export const DEFAULT_SETTINGS: ParserSettings = {
     miniMessageColors: true,
     miniMessageFormatting: true,
     miniMessageGradients: true,
+    customVariables: {},
 };

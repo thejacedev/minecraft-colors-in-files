@@ -24,6 +24,7 @@ function getSettings(): ParserSettings {
         miniMessageColors: config.get<boolean>(SETTING_KEYS.MINIMESSAGE_COLORS, true),
         miniMessageFormatting: config.get<boolean>(SETTING_KEYS.MINIMESSAGE_FORMATTING, true),
         miniMessageGradients: config.get<boolean>(SETTING_KEYS.MINIMESSAGE_GRADIENTS, true),
+        customVariables: config.get<Record<string, string>>(SETTING_KEYS.CUSTOM_VARIABLES, {}),
     };
     return settings;
 }
@@ -145,8 +146,29 @@ function updateDecorations(editor: vscode.TextEditor) {
                 let endPos = nextMatch ? nextMatch.startIndex : text.length;
 
                 // For legacy codes, check if we're inside a quoted string and stop at closing quote
+                // Also stop at backticks and template expressions (act as color reset)
                 if (!currentMatch.isMiniMessage && currentMatch.color) {
-                    const quoteChars = ['`', '"', "'"];
+                    const quoteChars = ['"', "'"];
+                    const afterCode = text.substring(startPos);
+
+                    // Stop at backticks (template literal boundaries)
+                    const nextBacktick = afterCode.indexOf('`');
+                    if (nextBacktick !== -1) {
+                        const absoluteBacktickPos = startPos + nextBacktick;
+                        if (absoluteBacktickPos < endPos) {
+                            endPos = absoluteBacktickPos;
+                        }
+                    }
+
+                    // Stop at template expressions ${...}
+                    const nextTemplateExpr = afterCode.indexOf('${');
+                    if (nextTemplateExpr !== -1) {
+                        const absoluteTemplatePos = startPos + nextTemplateExpr;
+                        if (absoluteTemplatePos < endPos) {
+                            endPos = absoluteTemplatePos;
+                        }
+                    }
+
                     for (const quote of quoteChars) {
                         // Find opening quote before the color code
                         const beforeCode = text.substring(0, currentMatch.startIndex);
@@ -157,8 +179,8 @@ function updateDecorations(editor: vscode.TextEditor) {
                             const betweenQuoteAndCode = text.substring(lastOpenQuote + 1, currentMatch.startIndex);
                             if (!betweenQuoteAndCode.includes(quote)) {
                                 // We're inside a quoted string - find closing quote
-                                const afterCode = text.substring(startPos);
-                                const closingQuote = afterCode.indexOf(quote);
+                                const afterQuoteCode = text.substring(startPos);
+                                const closingQuote = afterQuoteCode.indexOf(quote);
                                 if (closingQuote !== -1) {
                                     const absoluteClosingPos = startPos + closingQuote;
                                     if (absoluteClosingPos < endPos) {

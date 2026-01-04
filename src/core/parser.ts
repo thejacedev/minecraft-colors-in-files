@@ -150,6 +150,52 @@ export function findAllMatches(line: string, settings: ParserSettings = DEFAULT_
         }
     }
 
+    // Custom variables (e.g., ${COLORS.primary}, COLORS.secondary, etc.)
+    if (settings.customVariables && Object.keys(settings.customVariables).length > 0) {
+        for (const [varName, colorValue] of Object.entries(settings.customVariables)) {
+            // Resolve color value - can be hex, &x code, or MiniMessage name
+            let resolvedColor: string | null = null;
+
+            if (colorValue.startsWith('#')) {
+                // Already hex
+                resolvedColor = colorValue;
+            } else if (colorValue.startsWith('&') && colorValue.length === 2) {
+                // Legacy code like &a
+                const code = colorValue[1].toLowerCase();
+                resolvedColor = MINECRAFT_COLORS[code] || null;
+            } else if (MINIMESSAGE_COLORS[colorValue.toLowerCase()]) {
+                // MiniMessage name like "green"
+                resolvedColor = MINIMESSAGE_COLORS[colorValue.toLowerCase()];
+            }
+
+            if (!resolvedColor) { continue; }
+
+            // Match ${varName} or just varName
+            const escapedVar = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const patterns = [
+                new RegExp(`\\$\\{${escapedVar}\\}`, 'g'),  // ${COLORS.primary}
+            ];
+
+            for (const pattern of patterns) {
+                while ((match = pattern.exec(line)) !== null) {
+                    // Check if this position is already matched
+                    const alreadyMatched = matches.some(m =>
+                        match!.index >= m.startIndex && match!.index < m.startIndex + m.matchLength
+                    );
+                    if (!alreadyMatched) {
+                        matches.push({
+                            startIndex: match.index,
+                            matchLength: match[0].length,
+                            isClosingTag: false,
+                            isMiniMessage: true,  // Treat like MiniMessage so color applies AFTER the tag
+                            color: resolvedColor,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     // Sort by start index
     matches.sort((a, b) => a.startIndex - b.startIndex);
 
