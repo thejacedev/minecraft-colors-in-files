@@ -1,0 +1,92 @@
+{
+  "name": "minecraft-colors-in-files",
+  "displayName": "Minecraft Colors in Files",
+  "description": "Highlights Minecraft color codes (&x, &#HEX, MiniMessage) in your files",
+  "version": "0.0.1",
+  "publisher": "jacesleeman",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacesleeman/minecraft-colors-in-files"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "minecraft-colors.toggle",
+        "title": "Toggle Minecraft Color Highlighting"
+      }
+    ],
+    "configuration": {
+      "title": "Minecraft Colors",
+      "properties": {
+        "minecraftColors.legacy.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable legacy formatting (&x codes)"
+        },
+        "minecraftColors.legacy.colors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable legacy color codes (&0-9, &a-f)"
+        },
+        "minecraftColors.legacy.formatting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable legacy formatting codes (&k, &l, &m, &n, &o, &r)"
+        },
+        "minecraftColors.legacyHex.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable legacy hex colors (&#RRGGBB)"
+        },
+        "minecraftColors.miniMessage.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MiniMessage formatting"
+        },
+        "minecraftColors.miniMessage.colors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MiniMessage color tags (<red>, <#RRGGBB>)"
+        },
+        "minecraftColors.miniMessage.formatting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MiniMessage formatting tags (<bold>, <italic>, etc.)"
+        },
+        "minecraftColors.miniMessage.gradients": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable MiniMessage gradient tags"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "eslint": "^9.39.2",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.51.0"
+  }
+}
